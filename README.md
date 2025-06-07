@@ -20,7 +20,7 @@
   Navigation employs an A*-based planner, which replans paths dynamically as new information is perceived. This allows examination of the integration between reactive sensing and symbolic planning in dynamic environments.
 
 - **Stepwise Visualization & Annotation:**  
-  Each time step is visualized with annotated grid cells indicating agent (A), start (S), goal (G), obstacles (O), and wet floors (W). The agent’s traversed path is overlaid and each frame is saved for post-experiment analysis.
+  Each time step is visualized with annotated grid cells indicating agent (A), start (S), goal (G), obstacles (O), wet floors (W), and (optionally) walls (`||`). The agent’s traversed path is overlaid and each frame is saved for post-experiment analysis.
 
 - **Comprehensive Logging & Data Export:**  
   The simulator logs agent state and knowledge base after every move, producing both JSONL and plain-text logs for subsequent research, reproducibility, or reporting.
@@ -42,6 +42,19 @@ The Illuminastick framework is designed for modular extensibility. Potential res
 
 - **Adaptive and Hierarchical Planning:**  
   Explore integration of high-level task planners, conditional planning under uncertainty, or hybrid symbolic-subsymbolic architectures.
+
+---
+
+## Code Structure and Customization
+
+- **illuminastick_sim.py:**  
+  Main simulation file implementing the environment, agent, sensors, planner, knowledge base, and visualization.
+
+- **Adding new features:**  
+  - **Sensor Types:** Extend the `Sensors` class (e.g., add `sense_thermal`, `sense_sound`).
+  - **Complex Environments:** Add more wall and moving obstacle logic in the `Environment` class.
+  - **Policy Learning:** Implement RL in the `PolicyLearner` class and update the main loop for RL-based decision-making.
+  - **Multi-Agent:** Instantiate multiple agents with separate or shared knowledge bases.
 
 ---
 

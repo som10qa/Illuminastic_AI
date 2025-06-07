@@ -1,0 +1,27 @@
+{
+  "steps": 9,
+  "goal_reached": [
+    true,
+    true,
+    true
+  ],
+  "final_positions": [
+    [
+      1,
+      6
+    ],
+    [
+      0,
+      6
+    ],
+    [
+      5,
+      5
+    ]
+  ],
+  "path_lengths": [
+    4,
+    9,
+    7
+  ]
+}
