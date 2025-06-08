@@ -2,13 +2,22 @@ import random
 import time
 import os
 import logging
-import matplotlib.pyplot as plt
-import numpy as np
 import json
 import argparse
+import numpy as np
+from collections import defaultdict
+
+try:
+    import tkinter as tk
+    from tkinter import messagebox
+    TK_AVAILABLE = True
+except ImportError:
+    TK_AVAILABLE = False
+
+import matplotlib.pyplot as plt
 import imageio.v2 as imageio
 
-# ========= HELPERS FOR PATHS =========
+# ========== PATH HELPERS ==========
 def find_file(filename, search_dirs=[".", "config", "data"]):
     for d in search_dirs:
         candidate = os.path.join(d, filename)
@@ -16,11 +25,9 @@ def find_file(filename, search_dirs=[".", "config", "data"]):
             return candidate
     return filename
 
-# ====== BLE LOCALIZATION (Simulated Real Update) ======
+# ========== BLE LOCALIZATION ==========
 def get_ble_location(agent_id, env, step, override_every=12):
-    """Random BLE fix: Every N steps, returns a random (legal) cell."""
     if step % override_every == 0:
-        # Only choose empty non-obstacle, non-wall cell
         empty_cells = [
             (x, y)
             for x in range(env.size)
@@ -33,7 +40,7 @@ def get_ble_location(agent_id, env, step, override_every=12):
             return pos
     return None
 
-# ====== CONFIG/ARGUMENTS ======
+# ========== CONFIG ==========
 def load_config():
     parser = argparse.ArgumentParser(description="Multi-Agent Navigation Simulator")
     parser.add_argument('--config', type=str, default="config/config.json", help="JSON config file")
@@ -50,6 +57,7 @@ def load_config():
     parser.add_argument('--share_every', type=int, default=1, help="Agents share knowledge every N steps")
     parser.add_argument('--init_states', type=str, default="data/initial_states.json", help="Initial agent states JSON (optional)")
     parser.add_argument('--belief_view', action='store_true', help="Show explicit agent belief maps")
+    parser.add_argument('--gui', action='store_true', help="Use Tkinter GUI if available")
     args = parser.parse_args()
     config_path = find_file(args.config)
     if os.path.exists(config_path):
@@ -61,7 +69,7 @@ def load_config():
 
 args = load_config()
 
-# ====== ENVIRONMENT ======
+# ========== ENVIRONMENT ==========
 class Environment:
     def __init__(self, size, obstacles, wet_floors, walls=None, moving_obstacles=None):
         self.size = int(size)
@@ -69,32 +77,22 @@ class Environment:
         self.wet_floors = set(map(tuple, wet_floors))
         self.walls = set(map(tuple, walls)) if walls else set()
         self.moving_obstacles = set(map(tuple, moving_obstacles)) if moving_obstacles else set()
-
-    def is_obstacle(self, pos):
-        return pos in self.obstacles or pos in self.moving_obstacles
-
-    def is_wet(self, pos):
-        return pos in self.wet_floors
-
-    def is_wall(self, pos):
-        return pos in self.walls
-
+    def is_obstacle(self, pos): return pos in self.obstacles or pos in self.moving_obstacles
+    def is_wet(self, pos): return pos in self.wet_floors
+    def is_wall(self, pos): return pos in self.walls
     def is_within(self, pos):
         x, y = pos
         return 0 <= x < self.size and 0 <= y < self.size
-
     def update_moving_obstacles(self):
         updated = set()
         for pos in self.moving_obstacles:
             choices = [(pos[0]+dx, pos[1]+dy) for dx,dy in [(-1,0),(1,0),(0,-1),(0,1)]]
             valid = [c for c in choices if self.is_within(c) and c not in self.obstacles and c not in self.wet_floors and c not in self.walls]
-            if valid:
-                updated.add(random.choice(valid))
-            else:
-                updated.add(pos)
+            if valid: updated.add(random.choice(valid))
+            else: updated.add(pos)
         self.moving_obstacles = updated
 
-# ====== KNOWLEDGE BASE ======
+# ========== KNOWLEDGE BASE ==========
 class KnowledgeBase:
     def __init__(self, start, goal):
         self.data = {
@@ -105,7 +103,7 @@ class KnowledgeBase:
             'walls': set(),
             'uncertainty': {},
             'last_update': 0,
-            'status_flags': {'uncertainty': False, 'sensor_error': False},
+            'status_flags': {'uncertainty': False, 'sensor_error': False, 'stuck': False},
             'belief_map': {}  # For ontological/logic inference
         }
     def update(self, observation):
@@ -120,25 +118,30 @@ class KnowledgeBase:
     def flag_uncertainty(self, msg):
         self.data['status_flags']['uncertainty'] = True
         self.data['uncertainty'][time.time()] = msg
-        # Emergency alert stub/log
         with open("logs/emergency_alerts.log", "a") as f:
             f.write(f"[ALERT {time.time()}] {msg}\n")
     def clear_flags(self):
-        self.data['status_flags'] = {'uncertainty': False, 'sensor_error': False}
+        self.data['status_flags'] = {'uncertainty': False, 'sensor_error': False, 'stuck': False}
 
-# ====== SENSOR MODEL with ADAPTATION/LEARNING ======
+# ========== SENSOR MODEL WITH FAILURES ==========
 class Sensors:
-    def __init__(self, env, kb, noise=0.18):
+    def __init__(self, env, kb, noise=0.18, sensor_fail_prob=0.07):
         self.env = env
         self.kb = kb
         self.noise = noise
         self.step_counter = 0
+        self.sensor_fail_prob = sensor_fail_prob
     def sense(self, pos):
         self.step_counter += 1
         # Sensor adapts/learns as steps increase (becomes more reliable)
         if self.step_counter % 14 == 0 and self.noise > 0.06:
             self.noise -= 0.03
             print(f"[Sensor Adaptation] Sensor noise decreased to {self.noise:.2f}")
+        # Failure: No reading this step
+        if random.random() < self.sensor_fail_prob:
+            print(f"[Sensor Failure] Agent sensor failed at {pos}!")
+            self.kb.data['status_flags']['sensor_error'] = True
+            return {'obstacles': set(), 'wet_floors': set(), 'walls': set(), 'user_position': pos}
         observations = {'obstacles': set(), 'wet_floors': set(), 'walls': set(), 'user_position': pos}
         for dx in [-1,0,1]:
             for dy in [-1,0,1]:
@@ -161,10 +164,11 @@ class Sensors:
                             observations['walls'].add(neighbor)
         return observations
     def adapt_sensor(self, new_noise):
-        self.noise = new_noise  # Simulate learning/adaptation
+        self.noise = new_noise
 
-# ====== AGENT COMMUNICATION ======
+# ========== AGENT COMMUNICATION & BASIC COORDINATION ==========
 def communicate(kb_list):
+    # share hazards and status, simple help request if stuck
     for i, kba in enumerate(kb_list):
         for j, kbb in enumerate(kb_list):
             if i != j:
@@ -172,15 +176,19 @@ def communicate(kb_list):
                 kbb.data['wet_floors'].update(kba.data['wet_floors'])
                 kbb.data['walls'].update(kba.data['walls'])
                 kbb.data['belief_map'].update(kba.data.get('belief_map', {}))
+            # Help coordination: if an agent is stuck, others "notice"
+            if kba.data['status_flags'].get('stuck'):
+                kbb.data['status_flags']['help_neighbor'] = True
 
-# ====== RL AGENT TEMPLATE ======
+# ========== RL AGENT TEMPLATE ==========
 class RLAgent:
     def __init__(self, agent_id):
         self.agent_id = agent_id
     def choose_action(self, kb, available_moves, goal):
+        # You can implement Q-table or DQN here
         return random.choice(available_moves) if available_moves else None
 
-# ====== PLANNER (A*) ======
+# ========== PLANNER (A*) ==========
 class Planner:
     def __init__(self, kb, env):
         self.kb = kb
@@ -200,8 +208,7 @@ class Planner:
             if node == goal:
                 self.current_plan = path + [node]
                 return
-            if node in visited:
-                continue
+            if node in visited: continue
             visited.add(node)
             for dx, dy in [(-1,0),(1,0),(0,-1),(0,1)]:
                 neighbor = (node[0]+dx, node[1]+dy)
@@ -239,6 +246,33 @@ def choose_agent_color(i):
     colors = ['yellow', 'magenta', 'orange', 'cyan', 'lime', 'pink']
     return colors[i % len(colors)]
 
+# ========== PERFORMANCE METRICS ==========
+def init_metrics(num_agents):
+    return {
+        'steps_taken': [0 for _ in range(num_agents)],
+        'hazard_hits': [0 for _ in range(num_agents)],
+        'sensor_failures': [0 for _ in range(num_agents)],
+        'actuator_failures': [0 for _ in range(num_agents)],
+        'stuck_events': [0 for _ in range(num_agents)],
+        'ontology_agreement_steps': 0
+    }
+
+def print_metrics(metrics, num_agents):
+    print("\n--- Performance Metrics ---")
+    for i in range(num_agents):
+        print(f"Agent {i+1}: steps={metrics['steps_taken'][i]}, hazards_hit={metrics['hazard_hits'][i]}, sensor_fails={metrics['sensor_failures'][i]}, actuator_fails={metrics['actuator_failures'][i]}, stuck={metrics['stuck_events'][i]}")
+    print(f"Total steps with ontology agreement: {metrics['ontology_agreement_steps']}")
+
+# ========== ONTOLOGY-BASED INFERENCE ==========
+def run_ontology_inference(kbs, step, metrics):
+    all_beliefs = [set(kb.data['belief_map'].keys()) for kb in kbs]
+    if not all_beliefs: return
+    intersection = set.intersection(*all_beliefs)
+    if intersection:
+        metrics['ontology_agreement_steps'] += 1
+        print(f"\n[Ontology] Step {step}: All agents believe these cells are hazardous: {sorted(intersection)}\n")
+
+# ========== DRAW GRID (Matplotlib fallback) ==========
 def draw_grid(agent_positions, agent_goals, obstacles, wet_floors, walls, moving_obstacles, size, step, path_histories=None, save_dir=None, kb_list=None, show_belief=False):
     grid = np.ones((size, size, 3), dtype=float)
     for (x, y) in obstacles: grid[x, y] = [1, 0, 0]
@@ -281,17 +315,55 @@ def draw_grid(agent_positions, agent_goals, obstacles, wet_floors, walls, moving
     if save_dir is not None:
         plt.savefig(f"{save_dir}/frame_{step:03d}.png")
 
-# ====== ONTOLOGY-BASED INFERENCE (Simple Logic) ======
-def run_ontology_inference(kbs, step):
-    # Example: Find cells all agents believe are hazardous (any hazard type)
-    all_beliefs = [set(kb.data['belief_map'].keys()) for kb in kbs]
-    if not all_beliefs:
-        return
-    # Cells believed hazardous by all agents
-    intersection = set.intersection(*all_beliefs)
-    if intersection:
-        print(f"\n[Ontology] Step {step}: All agents believe these cells are hazardous: {sorted(intersection)}\n")
+# ========== OPTIONAL TKINTER GUI ==========
+class IlluminastickGUI:
+    def __init__(self, env, agent_positions, agent_goals, path_histories, size):
+        self.env = env
+        self.size = size
+        self.agent_positions = agent_positions
+        self.agent_goals = agent_goals
+        self.path_histories = path_histories
+        self.root = tk.Tk()
+        self.root.title("Illuminastick Simulator")
+        self.cell = 40
+        self.canvas = tk.Canvas(self.root, width=size*self.cell, height=size*self.cell)
+        self.canvas.pack()
+        self._draw_grid()
+        self.running = True
+        self.root.after(100, self._loop)
+        self.root.mainloop()
+    def _draw_grid(self):
+        self.canvas.delete("all")
+        # Draw cells
+        for i in range(self.size):
+            for j in range(self.size):
+                x0 = j*self.cell
+                y0 = i*self.cell
+                x1 = x0 + self.cell
+                y1 = y0 + self.cell
+                fill = "white"
+                if (i, j) in self.env.obstacles: fill = "red"
+                elif (i, j) in self.env.wet_floors: fill = "blue"
+                elif (i, j) in self.env.walls: fill = "gray"
+                elif (i, j) in self.env.moving_obstacles: fill = "black"
+                self.canvas.create_rectangle(x0, y0, x1, y1, fill=fill)
+        # Draw agents and goals
+        for idx, pos in enumerate(self.agent_positions):
+            x = pos[1]*self.cell + self.cell//2
+            y = pos[0]*self.cell + self.cell//2
+            self.canvas.create_oval(x-10, y-10, x+10, y+10, fill=choose_agent_color(idx))
+            self.canvas.create_text(x, y, text=f"A{idx+1}", fill="black")
+        for idx, pos in enumerate(self.agent_goals):
+            x = pos[1]*self.cell + self.cell//2
+            y = pos[0]*self.cell + self.cell//2
+            self.canvas.create_text(x, y, text=f"G{idx+1}", fill="green")
 
+    def _loop(self):
+        if self.running:
+            self._draw_grid()
+            self.root.after(200, self._loop)
+
+# ========== MAIN SIMULATION ==========
 def main():
     logs_dir = "logs"
     frames_dir = "frames"
@@ -388,11 +460,21 @@ def main():
             policies.append(None)
         path_histories.append([agent_starts[i]])
 
+    metrics = init_metrics(num_agents)
+
+    # Choose visualization method
+    use_gui = getattr(args, "gui", False) and TK_AVAILABLE
+    if use_gui:
+        IlluminastickGUI(env, [kb.data['user_position'] for kb in kbs], agent_goals, path_histories, int(args.size))
+        # If GUI runs, exit after mainloop
+        return
+
     plt.ion()
     plt.figure(figsize=(7,7))
     print("\n--- Multi-Agent Navigation Start ---\n")
     done = [False for _ in range(num_agents)]
     steps = 0
+    action_fail_prob = 0.06  # 6% actuator failure
     while not all(done) and steps < int(args.max_steps):
         env.update_moving_obstacles()
         draw_grid(
@@ -409,11 +491,10 @@ def main():
             kb_list=[kb.data for kb in kbs],
             show_belief=args.belief_view
         )
-        run_ontology_inference(kbs, steps)  # Ontology & Inference step
+        run_ontology_inference(kbs, steps, metrics)  # Ontology & Inference step
 
         for i, kb in enumerate(kbs):
             kb_histories[i].append({"step": steps, "kb": serialize_kb(kb.data)})
-
         if int(args.share_every) > 0 and steps % int(args.share_every) == 0:
             communicate(kbs)
 
@@ -438,17 +519,32 @@ def main():
                 next_pos = policies[i].choose_action(kbs[i].data, available_moves, goal)
             else:
                 next_pos = planner.next_action(current=pos)
+
+            # Actuator failure
+            if random.random() < action_fail_prob:
+                print(f"[Actuator Failure] Agent {i+1} failed to move (stuck at {pos})!")
+                kbs[i].data['status_flags']['stuck'] = True
+                metrics['actuator_failures'][i] += 1
+                metrics['stuck_events'][i] += 1
+                continue
+            kbs[i].data['status_flags']['stuck'] = False
+
             if next_pos is None or next_pos == pos:
                 done[i] = True
                 continue
+
             obs = sensors_list[i].sense(next_pos)
             kbs[i].update(obs)
+            if kbs[i].data['status_flags'].get('sensor_error', False):
+                metrics['sensor_failures'][i] += 1
             if next_pos in kbs[i].data['obstacles'] or next_pos in kbs[i].data['wet_floors'] or next_pos in kbs[i].data['walls']:
                 kbs[i].flag_uncertainty("Hazard/wall encountered! Replanning.")
                 planners[i].plan_to_goal(start_override=pos)
+                metrics['hazard_hits'][i] += 1
                 continue
             kbs[i].data['user_position'] = next_pos
             path_histories[i].append(next_pos)
+            metrics['steps_taken'][i] += 1
             _ = reward_fn(next_pos, goal, kbs[i].data)
             if next_pos == goal:
                 done[i] = True
@@ -468,7 +564,7 @@ def main():
             for snap in kb_histories[i]:
                 json.dump(snap, f)
                 f.write("\n")
-
+    print_metrics(metrics, num_agents)
     if args.make_gif:
         print("\n[INFO] Assembling simulation.gif from frames/ ...")
         images = []
