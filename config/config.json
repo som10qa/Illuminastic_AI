@@ -1,0 +1,15 @@
+{
+  "size": 10,
+  "agents": [
+    {"start": [0, 0], "goal": [9, 9], "type": "classic"},
+    {"start": [9, 0], "goal": [0, 9], "type": "rl"}
+  ],
+  "num_obstacles": 10,
+  "num_wet": 4,
+  "num_walls": 5,
+  "moving_obstacles": 2,
+  "max_steps": 100,
+  "seed": 42,
+  "video_fps": 4,
+  "rl_agent_indices": [1]
+}

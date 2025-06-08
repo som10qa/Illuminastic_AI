@@ -34,3 +34,39 @@
 2025-06-07 12:16:36,420 Step 16: User at (7, 9), KB: {'user_position': (7, 9), 'goal_position': (8, 9), 'obstacles': {(1, 2), (0, 6), (1, 4), (1, 5)}, 'wet_floors': {(1, 3)}, 'walls': {(5, 1), (5, 6), (7, 2), (6, 6), (8, 2)}, 'uncertainty': {}, 'last_update': 1749278796.36973, 'status_flags': {'uncertainty': False, 'sensor_error': False}}
 2025-06-07 12:16:36,539 Moving from (7, 9) -> (8, 9)
 2025-06-07 12:16:36,539 GOAL REACHED!
+2025-06-08 09:05:31,516 Step 0: User at (0, 0), KB: {'user_position': (0, 0), 'goal_position': (8, 9), 'obstacles': set(), 'wet_floors': set(), 'walls': {(5, 1), (5, 6), (7, 2), (6, 6), (8, 2)}, 'uncertainty': {}, 'last_update': 0, 'status_flags': {'uncertainty': False, 'sensor_error': False}}
+2025-06-08 09:05:31,670 Moving from (0, 0) -> (0, 1)
+2025-06-08 09:05:31,721 Step 1: User at (0, 1), KB: {'user_position': (0, 1), 'goal_position': (8, 9), 'obstacles': set(), 'wet_floors': set(), 'walls': {(5, 1), (5, 6), (7, 2), (6, 6), (8, 2)}, 'uncertainty': {}, 'last_update': 1749353731.670073, 'status_flags': {'uncertainty': False, 'sensor_error': False}}
+2025-06-08 09:05:31,818 Moving from (0, 1) -> (0, 2)
+2025-06-08 09:05:31,870 Step 2: User at (0, 2), KB: {'user_position': (0, 2), 'goal_position': (8, 9), 'obstacles': {(1, 2)}, 'wet_floors': set(), 'walls': {(5, 1), (5, 6), (7, 2), (6, 6), (8, 2)}, 'uncertainty': {}, 'last_update': 1749353731.818536, 'status_flags': {'uncertainty': False, 'sensor_error': False}}
+2025-06-08 09:05:31,994 Moving from (0, 2) -> (0, 3)
+2025-06-08 09:05:32,045 Step 3: User at (0, 3), KB: {'user_position': (0, 3), 'goal_position': (8, 9), 'obstacles': {(1, 2)}, 'wet_floors': {(1, 3)}, 'walls': {(5, 1), (5, 6), (7, 2), (6, 6), (8, 2)}, 'uncertainty': {}, 'last_update': 1749353731.9945421, 'status_flags': {'uncertainty': False, 'sensor_error': False}}
+2025-06-08 09:05:32,174 Warning: Wet floor nearby! Alert user!
+2025-06-08 09:05:32,174 Moving from (0, 3) -> (0, 4)
+2025-06-08 09:05:32,225 Step 4: User at (0, 4), KB: {'user_position': (0, 4), 'goal_position': (8, 9), 'obstacles': {(1, 2), (1, 4)}, 'wet_floors': {(1, 3)}, 'walls': {(5, 1), (5, 6), (7, 2), (6, 6), (8, 2)}, 'uncertainty': {}, 'last_update': 1749353732.1740339, 'status_flags': {'uncertainty': False, 'sensor_error': False}}
+2025-06-08 09:05:32,351 Moving from (0, 4) -> (0, 5)
+2025-06-08 09:05:32,402 Step 5: User at (0, 5), KB: {'user_position': (0, 5), 'goal_position': (8, 9), 'obstacles': {(1, 2), (1, 4)}, 'wet_floors': {(1, 3)}, 'walls': {(5, 1), (5, 6), (7, 2), (6, 6), (8, 2)}, 'uncertainty': {}, 'last_update': 1749353732.350883, 'status_flags': {'uncertainty': False, 'sensor_error': False}}
+2025-06-08 09:05:32,530 Moving from (0, 5) -> (0, 6)
+2025-06-08 09:05:32,581 Step 6: User at (0, 6), KB: {'user_position': (0, 6), 'goal_position': (8, 9), 'obstacles': {(1, 2), (1, 4), (1, 5)}, 'wet_floors': {(1, 3)}, 'walls': {(5, 1), (5, 6), (7, 2), (6, 6), (8, 2)}, 'uncertainty': {}, 'last_update': 1749353732.530539, 'status_flags': {'uncertainty': False, 'sensor_error': False}}
+2025-06-08 09:05:32,708 Moving from (0, 6) -> (0, 7)
+2025-06-08 09:05:32,759 Step 7: User at (0, 7), KB: {'user_position': (0, 7), 'goal_position': (8, 9), 'obstacles': {(1, 2), (1, 4), (1, 5)}, 'wet_floors': {(1, 3)}, 'walls': {(5, 1), (5, 6), (7, 2), (6, 6), (8, 2)}, 'uncertainty': {}, 'last_update': 1749353732.7078679, 'status_flags': {'uncertainty': False, 'sensor_error': False}}
+2025-06-08 09:05:32,889 Moving from (0, 7) -> (0, 8)
+2025-06-08 09:05:32,940 Step 8: User at (0, 8), KB: {'user_position': (0, 8), 'goal_position': (8, 9), 'obstacles': {(1, 2), (0, 6), (1, 4), (1, 5)}, 'wet_floors': {(1, 3)}, 'walls': {(5, 1), (5, 6), (7, 2), (6, 6), (8, 2)}, 'uncertainty': {}, 'last_update': 1749353732.889164, 'status_flags': {'uncertainty': False, 'sensor_error': False}}
+2025-06-08 09:05:33,068 Moving from (0, 8) -> (0, 9)
+2025-06-08 09:05:33,119 Step 9: User at (0, 9), KB: {'user_position': (0, 9), 'goal_position': (8, 9), 'obstacles': {(1, 2), (0, 6), (1, 4), (1, 5)}, 'wet_floors': {(1, 3)}, 'walls': {(5, 1), (5, 6), (7, 2), (6, 6), (8, 2)}, 'uncertainty': {}, 'last_update': 1749353733.068016, 'status_flags': {'uncertainty': False, 'sensor_error': False}}
+2025-06-08 09:05:33,245 Moving from (0, 9) -> (1, 9)
+2025-06-08 09:05:33,296 Step 10: User at (1, 9), KB: {'user_position': (1, 9), 'goal_position': (8, 9), 'obstacles': {(1, 2), (0, 6), (1, 4), (1, 5)}, 'wet_floors': {(1, 3)}, 'walls': {(5, 1), (5, 6), (7, 2), (6, 6), (8, 2)}, 'uncertainty': {}, 'last_update': 1749353733.244998, 'status_flags': {'uncertainty': False, 'sensor_error': False}}
+2025-06-08 09:05:33,422 Moving from (1, 9) -> (2, 9)
+2025-06-08 09:05:33,474 Step 11: User at (2, 9), KB: {'user_position': (2, 9), 'goal_position': (8, 9), 'obstacles': {(1, 2), (0, 6), (1, 4), (1, 5)}, 'wet_floors': {(1, 3)}, 'walls': {(5, 1), (5, 6), (7, 2), (6, 6), (8, 2)}, 'uncertainty': {}, 'last_update': 1749353733.422715, 'status_flags': {'uncertainty': False, 'sensor_error': False}}
+2025-06-08 09:05:33,596 Moving from (2, 9) -> (3, 9)
+2025-06-08 09:05:33,647 Step 12: User at (3, 9), KB: {'user_position': (3, 9), 'goal_position': (8, 9), 'obstacles': {(1, 2), (0, 6), (1, 4), (1, 5)}, 'wet_floors': {(1, 3)}, 'walls': {(5, 1), (5, 6), (7, 2), (6, 6), (8, 2)}, 'uncertainty': {}, 'last_update': 1749353733.5966861, 'status_flags': {'uncertainty': False, 'sensor_error': False}}
+2025-06-08 09:05:33,771 Moving from (3, 9) -> (4, 9)
+2025-06-08 09:05:33,822 Step 13: User at (4, 9), KB: {'user_position': (4, 9), 'goal_position': (8, 9), 'obstacles': {(1, 2), (0, 6), (1, 4), (1, 5)}, 'wet_floors': {(1, 3)}, 'walls': {(5, 1), (5, 6), (7, 2), (6, 6), (8, 2)}, 'uncertainty': {}, 'last_update': 1749353733.77155, 'status_flags': {'uncertainty': False, 'sensor_error': False}}
+2025-06-08 09:05:33,945 Moving from (4, 9) -> (5, 9)
+2025-06-08 09:05:33,997 Step 14: User at (5, 9), KB: {'user_position': (5, 9), 'goal_position': (8, 9), 'obstacles': {(1, 2), (0, 6), (1, 4), (1, 5)}, 'wet_floors': {(1, 3)}, 'walls': {(5, 1), (5, 6), (7, 2), (6, 6), (8, 2)}, 'uncertainty': {}, 'last_update': 1749353733.945909, 'status_flags': {'uncertainty': False, 'sensor_error': False}}
+2025-06-08 09:05:34,133 Moving from (5, 9) -> (6, 9)
+2025-06-08 09:05:34,184 Step 15: User at (6, 9), KB: {'user_position': (6, 9), 'goal_position': (8, 9), 'obstacles': {(1, 2), (0, 6), (1, 4), (1, 5)}, 'wet_floors': {(1, 3)}, 'walls': {(5, 1), (5, 6), (7, 2), (6, 6), (8, 2)}, 'uncertainty': {}, 'last_update': 1749353734.133779, 'status_flags': {'uncertainty': False, 'sensor_error': False}}
+2025-06-08 09:05:34,304 Moving from (6, 9) -> (7, 9)
+2025-06-08 09:05:34,355 Step 16: User at (7, 9), KB: {'user_position': (7, 9), 'goal_position': (8, 9), 'obstacles': {(1, 2), (0, 6), (1, 4), (1, 5)}, 'wet_floors': {(1, 3)}, 'walls': {(5, 1), (5, 6), (7, 2), (6, 6), (8, 2)}, 'uncertainty': {}, 'last_update': 1749353734.3043041, 'status_flags': {'uncertainty': False, 'sensor_error': False}}
+2025-06-08 09:05:34,477 Moving from (7, 9) -> (8, 9)
+2025-06-08 09:05:34,477 GOAL REACHED!

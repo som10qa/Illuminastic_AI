@@ -62,3 +62,8 @@ The Illuminastick framework is designed for modular extensibility. Potential res
 
 ```bash
 python3 illuminastick_sim.py
+
+or
+
+```bash
+python3 illuminastick_sim_parameterized.py --agents 3 --make_gif --config config/config.json
