@@ -1,0 +1,65 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+.DS_Store
+
+# C extensions
+*.so
+
+# Virtual environment
+.env/
+.venv/
+env/
+venv/
+ENV/
+aienv/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# PyCharm/VSCode project settings
+.idea/
+.vscode/
+
+# Logs
+logs/
+*.log
+
+# Matplotlib figures, output images, and simulation frames
+# frames/
+# *.png
+# *.jpg
+# *.jpeg
+# *.svg
+# *.pdf
+
+# Simulation Knowledge Base
+# kb_history.jsonl
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Python egg and build files
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+
+# Test/coverage outputs
+.coverage
+.tox/
+.nox/
+.pytest_cache/
+.cache/
+nosetests.xml
